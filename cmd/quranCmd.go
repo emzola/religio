@@ -25,11 +25,9 @@ func setChapterAndVerse(c *config, scripture string) error {
 		c.chapter = getChapterNumber(scripture)
 	} else {
 		parts := strings.Split(scripture, ":")
-
 		// retrieve chapter
 		chapter := getChapterNumber(parts[0])
 		c.chapter = chapter
-
 		// retrieve verse
 		if strings.Contains(parts[1], "-") {
 			verseParts := strings.Split(parts[1], "-")
@@ -51,6 +49,24 @@ func setChapterAndVerse(c *config, scripture string) error {
 	return nil
 }
 
+// getUrl determines which API url endpoint to make a request to.
+func getUrl(c *config, identifier string) string {
+	var url string
+	var limit int64
+	switch {
+		case len(c.verse) == 1:
+			limit = 1
+			url = fmt.Sprintf("https://api.alquran.cloud/v1/surah/%d/%s?offset=%d&limit=%d", c.chapter, identifier, c.verse[0]-1, limit)
+		case len(c.verse) == 2:
+			limit = (c.verse[1] + 1) - c.verse[0]
+			url = fmt.Sprintf("https://api.alquran.cloud/v1/surah/%d/%s?offset=%d&limit=%d", c.chapter, identifier, c.verse[0]-1, limit)
+		default:
+			url = fmt.Sprintf("http://api.alquran.cloud/v1/surah/%d/%s", c.chapter, identifier)
+	}
+	return url
+}
+
+// QuranCommand implements the quran sub-command.
 func QuranCommand(w io.Writer, args []string) error {
 	var language string
 	c := &config{}
@@ -73,13 +89,11 @@ func QuranCommand(w io.Writer, args []string) error {
 		return InvalidInputError{ErrNoScripture}
 	}
 	scripture := fs.Arg(0)
-
 	// Set the chapter and verse of the config
 	err := setChapterAndVerse(c, scripture)
 	if err != nil {
 		return err
-	}
-	
+	}	
 	httpClient := httpClient()
 
 	// Get language edition and identifier
@@ -89,7 +103,6 @@ func QuranCommand(w io.Writer, args []string) error {
 		if err != nil {
 			return err
 		}
-
 		identifier, err = data.LanguageIdentifier(languageEditions, language)
 		if err != nil {
 			return err
@@ -99,26 +112,19 @@ func QuranCommand(w io.Writer, args []string) error {
 	}
 
 	// Send HTTP requests to Quran API
-	var url string
-	var limit int64
-	switch {
-		case len(c.verse) == 1:
-			limit = 1
-			url = fmt.Sprintf("https://api.alquran.cloud/v1/surah/%d/%s?offset=%d&limit=%d", c.chapter, identifier, c.verse[0]-1, limit)
-		case len(c.verse) == 2:
-			limit = (c.verse[1] + 1) - c.verse[0]
-			url = fmt.Sprintf("https://api.alquran.cloud/v1/surah/%d/%s?offset=%d&limit=%d", c.chapter, identifier, c.verse[0]-1, limit)
-		default:
-			url = fmt.Sprintf("http://api.alquran.cloud/v1/surah/%d/%s", c.chapter, identifier)
-	}
-	
+	url := getUrl(c, identifier)	
 	quran, err := data.SendHTTPRequest(*httpClient, url)
 	if err != nil {
 		return err
 	}
+	quranData := quran.Data.Verse
 
-	data := quran.Data.Verse
-	fmt.Fprintf(w, "Reference: %s\n", scripture)	
-	fmt.Fprintln(w, data)	
+	fmt.Fprintf(w, "+%s+\n", strings.Repeat("-", 100))
+	fmt.Fprintf(w, "*** %s ***\n", strings.ToUpper(scripture))	
+	fmt.Fprintf(w, "+%s+\n", strings.Repeat("-", 100))
+	
+	for _, value := range quranData {
+		fmt.Fprintf(w, "(%d) %s\n", value.Number, value.Text)
+	}
 	return nil
 }

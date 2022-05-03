@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// httpClient returns an HTTP client.
 func httpClient() *http.Client {
 	redirectPolicyFunc := func (req *http.Request, via []*http.Request) error {
 		if len(via) >= 1 {

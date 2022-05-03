@@ -36,22 +36,18 @@ func LanguageEditionRequest(client *http.Client) (LanguageEdition, error) {
 	if err != nil {
 		return edition, err
 	}
-
 	resp, err := client.Do(req)
 	if err != nil {
 		return edition, err
 	}
 	defer resp.Body.Close()
-
 	if resp.Header.Get("Content-Type") != "application/json" {
 		return edition, nil
 	}
-
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return edition, err
 	}
-
 	err = json.Unmarshal(data, &edition)
 	return edition, err
 }

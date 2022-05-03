@@ -1,6 +1,6 @@
 # religio
 
-religio is an Command-line client for reading the bible and quran in several languages.
+religio is an command-line client for reading the bible and quran in several languages.
 
 ## Usage
 
@@ -13,5 +13,5 @@ bible -lang en 2 Peter 3:1-5
 ### Read the quran
 
 ```go
-quran -lang en Al Imran 3:51
+quran -lang en Al-Anfal:51
 ```

@@ -3,7 +3,7 @@ package cmd
 import "errors"
 
 var (
-	ErInvalidCommand = errors.New("invalid command specified")
+	ErrInvalidCommand = errors.New("invalid command specified")
 	ErrNoScripture = errors.New("you have to specify a scripture")
 )
 

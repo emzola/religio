@@ -10,14 +10,14 @@ import (
 	"github.com/emzola/religio/data"
 )
 
-type config struct {
+type quranConfig struct {
 	chapter int64
 	verse []int64
 }
 
-// setChapterAndVerse retrieves the quran chapter and verse and
+// setQuranChapterAndVerse retrieves the quran chapter and verse and
 // associates them with the appropriate fields in the quran config.
-func setChapterAndVerse(c *config, scripture string) error {
+func setQuranChapterAndVerse(c *quranConfig, scripture string) error {
 	// check whether scripture contains chapter and verse. If it contains both,
 	// retrieve both, if it contains only chapter, retrieve only chapter
 	if !strings.Contains(scripture, ":") {
@@ -50,7 +50,7 @@ func setChapterAndVerse(c *config, scripture string) error {
 }
 
 // getUrl determines which API url endpoint to make a request to.
-func getUrl(c *config, identifier string) string {
+func quranAPIUrl(c *quranConfig, identifier string) string {
 	var url string
 	var limit int64
 	switch {
@@ -69,17 +69,16 @@ func getUrl(c *config, identifier string) string {
 // QuranCommand implements the quran sub-command.
 func QuranCommand(w io.Writer, args []string) error {
 	var language string
-	c := &config{}
+	c := &quranConfig{}
 	fs := flag.NewFlagSet("quran", flag.ContinueOnError)
 	fs.SetOutput(w)
 	fs.StringVar(&language, "lang", "en", "Language of Quran")
 	fs.Usage = func() {
 		var usageString = `
-	quran: a sub-command for reading the quran.
+quran: a sub-command for reading the quran.
 	
-	quran: [options] scripture`
+quran: [options] scripture`
 		fmt.Fprintln(w, usageString)
-		fmt.Fprintln(w)
 		fmt.Fprintln(w)
 		fmt.Fprintln(w, "options: ")
 		fs.PrintDefaults()
@@ -90,7 +89,7 @@ func QuranCommand(w io.Writer, args []string) error {
 	}
 	scripture := fs.Arg(0)
 	// Set the chapter and verse of the config
-	err := setChapterAndVerse(c, scripture)
+	err := setQuranChapterAndVerse(c, scripture)
 	if err != nil {
 		return err
 	}	
@@ -112,8 +111,8 @@ func QuranCommand(w io.Writer, args []string) error {
 	}
 
 	// Send HTTP requests to Quran API
-	url := getUrl(c, identifier)	
-	quran, err := data.SendHTTPRequest(*httpClient, url)
+	url := quranAPIUrl(c, identifier)	
+	quran, err := data.SendQuranHTTPRequest(*httpClient, url)
 	if err != nil {
 		return err
 	}

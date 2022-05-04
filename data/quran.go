@@ -10,11 +10,11 @@ import (
 
 type Quran struct {
 	Data struct {
-		Verse []VerseDetails `json:"ayahs"`
+		Verse []QuranVerse `json:"ayahs"`
 	} `json:"data"`
 }
 
-type VerseDetails struct {
+type QuranVerse struct {
 	Number int    `json:"numberInSurah"`
 	Text   string `json:"text"`
 }
@@ -71,7 +71,7 @@ func LanguageIdentifier(editions LanguageEdition, language string) (string, erro
 }
 
 // SendHTTPRequest sends an HTTP request to the Quran Surah endpoint.
-func SendHTTPRequest(client http.Client, url string) (Quran, error) {
+func SendQuranHTTPRequest(client http.Client, url string) (Quran, error) {
 	quran := Quran{}
 	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, nil)
 	if err != nil {

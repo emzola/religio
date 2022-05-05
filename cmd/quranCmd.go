@@ -18,6 +18,7 @@ type quranConfig struct {
 // setQuranChapterAndVerse retrieves the quran chapter and verse and
 // associates them with the appropriate fields in the quran config.
 func setQuranChapterAndVerse(c *quranConfig, scripture string) error {
+	scripture = strings.TrimSpace(scripture)
 	// check whether scripture contains chapter and verse. If it contains both,
 	// retrieve both, if it contains only chapter, retrieve only chapter
 	if !strings.Contains(scripture, ":") {
@@ -84,8 +85,10 @@ quran: [options] scripture`
 		fs.PrintDefaults()
 	}
 	fs.Parse(args)
-	if fs.NArg() != 1 {
+	if fs.NArg() < 1 {
 		return InvalidInputError{ErrNoScripture}
+	} else if fs.NArg() > 1 {
+		return InvalidInputError{ErrInvalidArgs}
 	}
 	scripture := fs.Arg(0)
 	// Set the chapter and verse of the config

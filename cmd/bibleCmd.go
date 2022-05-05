@@ -11,7 +11,6 @@ import (
 )
 
 type bibleConfig struct {
-	language string
 	passage string
 	chapter string
 	verse []int64
@@ -20,6 +19,7 @@ type bibleConfig struct {
 // setBibleChapterAndVerse retrieves the bible chapter and verse and
 // associates them with the appropriate fields in the bible config.
 func PassageChapterAndVerse(c *bibleConfig, scripture string) error {
+	scripture = strings.TrimSpace(scripture)
 	// retrieve passage
 	parts := strings.Split(scripture, " ")
 	if strings.Count(scripture, " ") == 2 {
@@ -58,27 +58,27 @@ func PassageChapterAndVerse(c *bibleConfig, scripture string) error {
 	return nil
 }
 
-// getUrl determines which API url endpoint to make a request to.
-func bibleAPIUrl(c *bibleConfig) string {
+// bibleAPIUrl determines which API url endpoint to make a request to.
+func bibleAPIUrl(c *bibleConfig, identifier string) string {
 	var url string
-
 	switch {
 		case len(c.verse) == 1:
-			url = fmt.Sprintf("https://bible-references.p.rapidapi.com/api/verses/kjv/%s/%s?lang=%s&verse_start=%d&verse_end=%d", c.passage, c.chapter, c.language, c.verse[0], c.verse[0])
+			url = fmt.Sprintf("https://bible-references.p.rapidapi.com/api/verses/%s/%s/%s?verse_start=%d&verse_end=%d", identifier, c.passage, c.chapter, c.verse[0], c.verse[0])
 		case len(c.verse) == 2:
-			url = fmt.Sprintf("https://bible-references.p.rapidapi.com/api/verses/kjv/%s/%s?lang=%s&verse_start=%d&verse_end=%d", c.passage, c.chapter, c.language, c.verse[0], c.verse[1])
+			url = fmt.Sprintf("https://bible-references.p.rapidapi.com/api/verses/%s/%s/%s?verse_start=%d&verse_end=%d", identifier, c.passage, c.chapter, c.verse[0], c.verse[1])
 		default:
-			url = fmt.Sprintf("https://bible-references.p.rapidapi.com/api/verses/kjv/%s/%s?lang=%s", c.passage, c.chapter, c.language)
+			url = fmt.Sprintf("https://bible-references.p.rapidapi.com/api/verses/%s/%s/%s", identifier, c.passage, c.chapter)
 	}
 	return url
 }
 
-// QuranCommand implements the quran sub-command.
+// BibleCommand implements the bible sub-command.
 func BibleCommand(w io.Writer, args []string) error {
+	var language string
 	c := &bibleConfig{}
 	fs := flag.NewFlagSet("bible", flag.ContinueOnError)
 	fs.SetOutput(w)
-	fs.StringVar(&c.language, "lang", "en", "Language of Bible")
+	fs.StringVar(&language, "lang", "en", "Language of Bible")
 	fs.Usage = func() {
 		var usageString = `
 bible: a sub-command for reading the bible.
@@ -90,19 +90,36 @@ bible: [options] scripture`
 		fs.PrintDefaults()
 	}
 	fs.Parse(args)
-	if fs.NArg() != 1 {
+	if fs.NArg() < 1 {
 		return InvalidInputError{ErrNoScripture}
+	} else if fs.NArg() > 1 {
+		return InvalidInputError{ErrInvalidArgs}
 	}
 	scripture := fs.Arg(0)
-	// Set the chapter and verse of the config
+	// Set the passage, chapter and verse of the config
 	err := PassageChapterAndVerse(c, scripture)
 	if err != nil {
 		return err
 	}	
 	httpClient := httpClient()
 
-	// Send HTTP requests to Quran API
-	url := bibleAPIUrl(c)	
+	// Get language edition and identifier
+	var identifier string
+	if len(language) != 0 {
+		bibleLanguage, err := data.BibleLanguageRequest(httpClient)
+		if err != nil {
+			return err
+		}
+		identifier, err = data.BibleLanguageIdentifier(bibleLanguage, language)
+		if err != nil {
+			return err
+		}
+	} else {
+		identifier = "kjv"
+	}
+
+	// Send HTTP requests to Bible API
+	url := bibleAPIUrl(c, identifier)	
 	bible, err := data.SendBibleHTTPRequest(*httpClient, url)
 	if err != nil {
 		return err

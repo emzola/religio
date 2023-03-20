@@ -33,7 +33,7 @@ func handleCommand(w io.Writer, args []string) error {
 		}
 	}
 
-	if errors.Is(err, ErrInvalidSubCommand) {
+	if err != nil {
 		fmt.Fprintln(w, err)
 		printUsage(w)
 	}

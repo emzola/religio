@@ -12,7 +12,8 @@ func printBorder(w io.Writer, passage string) {
 	fmt.Fprintf(w, "+%s+\n", strings.Repeat("-", 100))
 }
 
-func getQuranChapterNumber(chapter string) int {
+func getQuranChapterNumber(chapter string) (int, error) {
+	var err error
 	var number int
 
 	switch chapter {
@@ -244,7 +245,9 @@ func getQuranChapterNumber(chapter string) int {
 		number = 113
 	case "An-Naas":
 		number = 114
+	default:
+		err = ErrInvalidPassageSpecified
 	}
 
-	return number
+	return number, err
 }

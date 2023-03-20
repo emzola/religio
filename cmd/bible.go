@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/emzola/religio/data"
+	"github.com/emzola/religio/apidata"
 )
 
 type bible struct{}
@@ -116,16 +116,16 @@ bible: [options] scripture`
 		return err
 	}
 
-	httpClient := data.Client()
+	httpClient := apidata.Client()
 
 	// Get language edition and identifier
 	var identifier string
 	if len(c.lang) != 0 {
-		bibleLanguage, err := data.BibleLanguageRequest(httpClient)
+		bibleLanguage, err := apidata.BibleLanguageRequest(httpClient)
 		if err != nil {
 			return err
 		}
-		identifier, err = data.BibleLanguageIdentifier(bibleLanguage, c.lang)
+		identifier, err = apidata.BibleLanguageIdentifier(bibleLanguage, c.lang)
 		if err != nil {
 			return err
 		}
@@ -135,7 +135,7 @@ bible: [options] scripture`
 
 	// Send HTTP requests to Bible API
 	url := bibleAPIUrl(c, identifier)
-	bible, err := data.SendBibleHTTPRequest(*httpClient, url)
+	bible, err := apidata.SendBibleHTTPRequest(*httpClient, url)
 	if err != nil {
 		return err
 	}

@@ -1,4 +1,4 @@
-package data
+package apidata
 
 import (
 	"context"
@@ -10,10 +10,10 @@ import (
 
 type Bible struct {
 	Data []struct {
-		Bible string `json:"bible"`
-		Passage string `json:"passage"`
-		Chapter string `json:"chapter"`
-		Verse []BibleVerse `json:"verse"`
+		Bible   string       `json:"bible"`
+		Passage string       `json:"passage"`
+		Chapter string       `json:"chapter"`
+		Verse   []BibleVerse `json:"verse"`
 	} `json:"data"`
 }
 
@@ -27,8 +27,8 @@ type BibleLanguage struct {
 }
 
 type Languages struct {
-	Bible string `json:"bible"`
-	Languages  []string `json:"languages"`
+	Bible     string   `json:"bible"`
+	Languages []string `json:"languages"`
 }
 
 // BibleLanguageRequest sends an HTTP request to the Quran Language Edition API endpoint.
@@ -65,7 +65,7 @@ func BibleLanguageIdentifier(bibles BibleLanguage, language string) (string, err
 			isValidLanguage = true
 			break
 		}
-	} 
+	}
 	if !isValidLanguage {
 		return identifier, errors.New("language not found")
 	}

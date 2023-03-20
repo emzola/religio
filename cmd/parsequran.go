@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/emzola/religio/data"
+	"github.com/emzola/religio/apidata"
 )
 
 func ParseQuran(w io.Writer, args []string) error {
@@ -16,7 +16,7 @@ func ParseQuran(w io.Writer, args []string) error {
 	fs.StringVar(&q.lang, "lang", "en", "Quran language")
 	fs.Usage = func() {
 		var usageMessage = `
-quran: a client for reading the quran.
+quran: A client for reading The Holy Quran.
 	
 quran: [options] passage`
 		fmt.Fprintln(w, usageMessage)
@@ -36,14 +36,14 @@ quran: [options] passage`
 		return err
 	}
 
-	client := data.Client()
+	client := apidata.Client()
 	langId, err := q.langId(client)
 	if err != nil {
 		return err
 	}
 
 	url := q.apiUrl(langId)
-	quran, err := data.SendQuranHTTPRequest(*client, url)
+	quran, err := apidata.DecodeQuranData(client, url)
 	if err != nil {
 		return err
 	}

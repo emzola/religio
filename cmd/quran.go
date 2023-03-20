@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/emzola/religio/data"
+	"github.com/emzola/religio/apidata"
 )
 
 type quran struct {
@@ -37,12 +37,13 @@ func (q quran) langId(client *http.Client) (string, error) {
 	langId := "en.asad"
 
 	if len(q.lang) != 0 {
-		langEditions, err := data.LanguageEditionRequest(client)
+		url := "http://api.alquran.cloud/v1/edition"
+		lang, err := apidata.DecodeLangEdition(client, url)
 		if err != nil {
 			return "", err
 		}
 
-		langId, err = data.LanguageIdentifier(langEditions, q.lang)
+		langId, err = apidata.LanguageIdentifier(lang, q.lang)
 		if err != nil {
 			return "", err
 		}
@@ -52,16 +53,23 @@ func (q quran) langId(client *http.Client) (string, error) {
 }
 
 func (q *quran) extractChapterAndVerse(passage string) error {
+	var err error
 	passage = strings.TrimSpace(passage)
 
 	// Extract chapter
 	if !strings.Contains(passage, ":") {
-		q.chapter = getQuranChapterNumber(passage)
+		q.chapter, err = getQuranChapterNumber(passage)
+		if err != nil {
+			return err
+		}
 		return nil
 	}
 
 	passageParts := strings.Split(passage, ":")
-	q.chapter = getQuranChapterNumber(passageParts[0])
+	q.chapter, err = getQuranChapterNumber(passageParts[0])
+	if err != nil {
+		return err
+	}
 
 	// Extract verse
 	if !strings.Contains(passageParts[1], "-") {

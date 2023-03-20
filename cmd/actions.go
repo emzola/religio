@@ -1,7 +1,20 @@
 package cmd
 
-func getChapterNumber(chapter string) int64 {
-	var number int64
+import (
+	"fmt"
+	"io"
+	"strings"
+)
+
+func printBorder(w io.Writer, passage string) {
+	fmt.Fprintf(w, "+%s+\n", strings.Repeat("-", 100))
+	fmt.Fprintf(w, "*** %s ***\n", strings.ToUpper(passage))
+	fmt.Fprintf(w, "+%s+\n", strings.Repeat("-", 100))
+}
+
+func getQuranChapterNumber(chapter string) int {
+	var number int
+
 	switch chapter {
 	case "Al-Fatihah":
 		number = 1

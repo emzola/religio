@@ -7,7 +7,7 @@ religio is an command-line client for reading the bible and quran in several lan
 ### Read the bible
 
 ```go
-bible -lang en "2 Peter 3:1-5"
+bible -lang es "2 Peter 3:1-5"
 
 // Output:
 // +----------------------------------------------------------------------------------------------------+

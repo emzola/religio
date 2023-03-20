@@ -3,9 +3,9 @@ package cmd
 import "errors"
 
 var (
-	ErrInvalidCommand = errors.New("invalid command specified")
-	ErrNoScripture = errors.New("you have to specify a scripture")
-	ErrInvalidArgs = errors.New("you have to specify only 1 scripture")
+	ErrInvalidCommand          = errors.New("invalid command specified")
+	ErrInvalidPassageSpecified = errors.New("invalid bible passage specified")
+	ErrInvalidArgs             = errors.New("you have to specify only 1 scripture")
 )
 
 type InvalidInputError struct {

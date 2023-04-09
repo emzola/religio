@@ -1,152 +1,98 @@
 package cmd
 
 import (
-	"flag"
 	"fmt"
-	"io"
-	"net/http"
 	"strconv"
 	"strings"
-
-	"github.com/emzola/religio/apidata"
 )
 
-type bible struct{}
-
-type bibleConfig struct {
-	passage string
+type bible struct {
+	book    string
 	chapter string
-	verse   []int64
+	verse   []int
 	lang    string
+	version string
 }
 
-func (b bible) apiUrl(langId string) string {
-	return ""
-}
-
-func (b bible) langId(client *http.Client) (string, error) {
-	return "", nil
-}
-
-// setBibleChapterAndVerse retrieves the bible chapter and verse and
-// associates them with the appropriate fields in the bible config.
-func PassageChapterAndVerse(c *bibleConfig, scripture string) error {
-	scripture = strings.TrimSpace(scripture)
-	// retrieve passage
-	parts := strings.Split(scripture, " ")
-	if strings.Count(scripture, " ") == 2 {
-		c.passage = fmt.Sprintf("%s %s", parts[0], parts[1])
-	} else {
-		c.passage = parts[0]
-	}
-
-	// check whether scripture contains chapter and verse. If it contains both,
-	// retrieve both, if it contains only chapter, retrieve only chapter
-	if !strings.Contains(scripture, ":") {
-		// retrieve only chapter
-		c.chapter = scripture
-	} else {
-		parts := strings.Split(scripture, ":")
-		// retrieve chapter
-		c.chapter = parts[0]
-		// retrieve verse
-		if strings.Contains(parts[1], "-") {
-			verseParts := strings.Split(parts[1], "-")
-			for _, value := range verseParts {
-				number, err := strconv.ParseInt(value, 10, 64)
-				if err != nil {
-					return err
-				}
-				c.verse = append(c.verse, number)
-			}
-		} else {
-			number, err := strconv.ParseInt(parts[1], 10, 64)
-			if err != nil {
-				return err
-			}
-			c.verse = append(c.verse, number)
-		}
-	}
-	return nil
-}
-
-// bibleAPIUrl determines which API url endpoint to make a request to.
-func bibleAPIUrl(c *bibleConfig, identifier string) string {
+func (b bible) apiUrl() string {
 	var url string
 	switch {
-	case len(c.verse) == 1:
-		url = fmt.Sprintf("https://bible-references.p.rapidapi.com/api/verses/%s/%s/%s?verse_start=%d&verse_end=%d", identifier, c.passage, c.chapter, c.verse[0], c.verse[0])
-	case len(c.verse) == 2:
-		url = fmt.Sprintf("https://bible-references.p.rapidapi.com/api/verses/%s/%s/%s?verse_start=%d&verse_end=%d", identifier, c.passage, c.chapter, c.verse[0], c.verse[1])
+	case len(b.verse) == 1:
+		url = fmt.Sprintf("https://4.dbt.io/api/bibles/filesets/%s%s/%s/%s?verse_start=%d&verse_end=%d", b.lang, b.version, b.book, b.chapter, b.verse[0], b.verse[0])
+	case len(b.verse) == 2:
+		url = fmt.Sprintf("https://4.dbt.io/api/bibles/filesets/%s%s/%s/%s?verse_start=%d&verse_end=%d", b.lang, b.version, b.book, b.chapter, b.verse[0], b.verse[1])
 	default:
-		url = fmt.Sprintf("https://bible-references.p.rapidapi.com/api/verses/%s/%s/%s", identifier, c.passage, c.chapter)
+		url = fmt.Sprintf("https://4.dbt.io/api/bibles/filesets/%s%s/%s/%s", b.lang, b.version, b.book, b.chapter)
 	}
 	return url
 }
 
-// BibleCommand implements the bible sub-command.
-func ParseBible(w io.Writer, args []string) error {
-	c := &bibleConfig{}
+func (b *bible) extractChapterAndVerse(passage string) error {
+	passage = strings.TrimSpace(passage)
+	parts := strings.Split(passage, " ")
 
-	fs := flag.NewFlagSet("bible", flag.ContinueOnError)
-	fs.SetOutput(w)
-	fs.StringVar(&c.lang, "lang", "en", "Bible language")
-	fs.Usage = func() {
-		var usageMessage = `
-bible: a sub-command for reading the bible.
-	
-bible: [options] scripture`
-		fmt.Fprintln(w, usageMessage)
-		fmt.Fprintln(w)
-		fmt.Fprintln(w, "options: ")
-		fs.PrintDefaults()
-	}
+	if strings.Count(passage, " ") == 2 {
+		// set book
+		bookId, err := setBibleBookId(fmt.Sprintf("%s %s", parts[0], parts[1]))
+		if err != nil {
+			return err
+		}
+		b.book = bookId
+		// set chapter
+		if strings.Contains(parts[2], ":") {
+			chapter := strings.Split(parts[2], ":")
+			b.chapter = chapter[0]
+			// set verse
+			if strings.Contains(chapter[1], "-") {
+				verses := strings.Split(chapter[1], "-")
+				for _, verse := range verses {
+					number, err := strconv.Atoi(verse)
+					if err != nil {
+						return err
+					}
+					b.verse = append(b.verse, number)
+				}
+			} else {
+				number, err := strconv.Atoi(chapter[1])
+				if err != nil {
+					return err
+				}
+				b.verse = append(b.verse, number)
+			}
+		} else {
+			b.chapter = parts[2]
+		}
+	} else if strings.Count(passage, " ") == 1 {
+		// set book
+		b.book = parts[0]
+		// set chapter
+		if strings.Contains(parts[1], ":") {
+			chapter := strings.Split(parts[1], ":")
+			b.chapter = chapter[0]
 
-	fs.Parse(args)
-
-	if fs.NArg() != 1 {
+			// set verse
+			if strings.Contains(chapter[1], "-") {
+				verses := strings.Split(chapter[1], "-")
+				for _, verse := range verses {
+					number, err := strconv.Atoi(verse)
+					if err != nil {
+						return err
+					}
+					b.verse = append(b.verse, number)
+				}
+			} else {
+				number, err := strconv.Atoi(chapter[1])
+				if err != nil {
+					return err
+				}
+				b.verse = append(b.verse, number)
+			}
+		} else {
+			b.chapter = parts[1]
+		}
+	} else {
 		return ErrInvalidPassageSpecified
 	}
 
-	passage := fs.Arg(0)
-
-	// Set the passage, chapter and verse of the config
-	err := PassageChapterAndVerse(c, passage)
-	if err != nil {
-		return err
-	}
-
-	httpClient := apidata.Client()
-
-	// Get language edition and identifier
-	var identifier string
-	if len(c.lang) != 0 {
-		bibleLanguage, err := apidata.BibleLanguageRequest(httpClient)
-		if err != nil {
-			return err
-		}
-		identifier, err = apidata.BibleLanguageIdentifier(bibleLanguage, c.lang)
-		if err != nil {
-			return err
-		}
-	} else {
-		identifier = "kjv"
-	}
-
-	// Send HTTP requests to Bible API
-	url := bibleAPIUrl(c, identifier)
-	bible, err := apidata.SendBibleHTTPRequest(*httpClient, url)
-	if err != nil {
-		return err
-	}
-	bibleData := bible.Data[0].Verse
-
-	fmt.Fprintf(w, "+%s+\n", strings.Repeat("-", 100))
-	fmt.Fprintf(w, "*** %s ***\n", strings.ToUpper(passage))
-	fmt.Fprintf(w, "+%s+\n", strings.Repeat("-", 100))
-
-	for _, value := range bibleData {
-		fmt.Fprintf(w, "(%d) %s\n", value.Number, value.Text)
-	}
 	return nil
 }

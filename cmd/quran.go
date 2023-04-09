@@ -58,7 +58,7 @@ func (q *quran) extractChapterAndVerse(passage string) error {
 
 	// Extract chapter
 	if !strings.Contains(passage, ":") {
-		q.chapter, err = getQuranChapterNumber(passage)
+		q.chapter, err = setQuranChapterNumber(passage)
 		if err != nil {
 			return err
 		}
@@ -66,7 +66,7 @@ func (q *quran) extractChapterAndVerse(passage string) error {
 	}
 
 	passageParts := strings.Split(passage, ":")
-	q.chapter, err = getQuranChapterNumber(passageParts[0])
+	q.chapter, err = setQuranChapterNumber(passageParts[0])
 	if err != nil {
 		return err
 	}

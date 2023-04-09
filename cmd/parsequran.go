@@ -36,7 +36,7 @@ quran: [options] passage`
 		return err
 	}
 
-	client := apidata.Client()
+	client := apidata.Client(nil)
 	langId, err := q.langId(client)
 	if err != nil {
 		return err
@@ -51,7 +51,6 @@ quran: [options] passage`
 	printBorder(w, passage)
 
 	quranData := quran.Data.Verse
-
 	for _, value := range quranData {
 		fmt.Fprintf(w, "(%d) %s\n", value.Number, value.Text)
 	}

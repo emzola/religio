@@ -8,22 +8,18 @@ import (
 
 type Quran struct {
 	Data struct {
-		Verse []Verse `json:"ayahs"`
+		Verse []struct {
+			Number int    `json:"numberInSurah"`
+			Text   string `json:"text"`
+		} `json:"ayahs"`
 	} `json:"data"`
 }
 
-type Verse struct {
-	Number int    `json:"numberInSurah"`
-	Text   string `json:"text"`
-}
-
 type Language struct {
-	Data []langData `json:"data"`
-}
-
-type langData struct {
-	Identifier string `json:"identifier"`
-	Language   string `json:"language"`
+	Data []struct {
+		Identifier string `json:"identifier"`
+		Language   string `json:"language"`
+	} `json:"data"`
 }
 
 func DecodeQuranData(client *http.Client, url string) (Quran, error) {

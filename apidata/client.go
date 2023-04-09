@@ -2,27 +2,35 @@ package apidata
 
 import (
 	"context"
-	"errors"
 	"io"
 	"net"
 	"net/http"
 	"time"
+
+	"github.com/emzola/religio/middleware"
 )
 
-func Client() *http.Client {
+func Client(headers map[string]string) *http.Client {
+	t := &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
+		DialContext: (&net.Dialer{
+			Timeout:   30 * time.Second,
+			KeepAlive: 30 * time.Second,
+		}).DialContext,
+		ForceAttemptHTTP2:     true,
+		MaxIdleConns:          25,
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
+	}
+
+	h := middleware.AddHeaders{
+		Headers:   headers,
+		Transport: t,
+	}
+
 	return &http.Client{
-		Transport: &http.Transport{
-			Proxy: http.ProxyFromEnvironment,
-			DialContext: (&net.Dialer{
-				Timeout:   30 * time.Second,
-				KeepAlive: 30 * time.Second,
-			}).DialContext,
-			ForceAttemptHTTP2:     true,
-			MaxIdleConns:          25,
-			IdleConnTimeout:       90 * time.Second,
-			TLSHandshakeTimeout:   10 * time.Second,
-			ExpectContinueTimeout: 1 * time.Second,
-		},
+		Transport: h,
 	}
 }
 
@@ -38,10 +46,6 @@ func fetchRemoteResource(client *http.Client, url string) ([]byte, error) {
 	}
 
 	defer r.Body.Close()
-
-	if r.Header.Get("Content-Type") != "application/json" {
-		return nil, errors.New("content type must be json")
-	}
 
 	return io.ReadAll(r.Body)
 }

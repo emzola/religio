@@ -12,7 +12,7 @@ func printBorder(w io.Writer, passage string) {
 	fmt.Fprintf(w, "+%s+\n", strings.Repeat("-", 100))
 }
 
-func getQuranChapterNumber(chapter string) (int, error) {
+func setQuranChapterNumber(chapter string) (int, error) {
 	var err error
 	var number int
 
@@ -250,4 +250,149 @@ func getQuranChapterNumber(chapter string) (int, error) {
 	}
 
 	return number, err
+}
+
+func setBibleBookId(book string) (string, error) {
+	var err error
+	var id string
+
+	switch strings.ToLower(book) {
+	case "genesis":
+		id = "GEN"
+	case "exodus":
+		id = "EXO"
+	case "leviticus":
+		id = "LEV"
+	case "numbers":
+		id = "NUM"
+	case "deuteronomy":
+		id = "DEU"
+	case "joshua":
+		id = "JOS"
+	case "judges":
+		id = "JDG"
+	case "ruth":
+		id = "RUT"
+	case "1 sammuel":
+		id = "1SA"
+	case "2 samuel":
+		id = "2SA"
+	case "1 kings":
+		id = "1KI"
+	case "2 kings":
+		id = "2KI"
+	case "1 chronicles":
+		id = "1CH"
+	case "2 chronicles":
+		id = "2CH"
+	case "ezra":
+		id = "EZR"
+	case "nehemiah":
+		id = "NEH"
+	case "esther":
+		id = "EST"
+	case "job":
+		id = "JOB"
+	case "psalms":
+		id = "PSA"
+	case "proverbs":
+		id = "PRO"
+	case "ecclesiastes":
+		id = "ECC"
+	case "song of solomon":
+		id = "SNG"
+	case "isaiah":
+		id = "ISA"
+	case "jeremiah":
+		id = "JER"
+	case "lamentations":
+		id = "LAM"
+	case "ezekiel":
+		id = "EZK"
+	case "daniel":
+		id = "DAN"
+	case "hosea":
+		id = "HOS"
+	case "joel":
+		id = "JOL"
+	case "amos":
+		id = "AMO"
+	case "obadiah":
+		id = "OBA"
+	case "jonah":
+		id = "JON"
+	case "micah":
+		id = "MIC"
+	case "nahum":
+		id = "NAM"
+	case "habakkuk":
+		id = "HAB"
+	case "zephaniah":
+		id = "ZEP"
+	case "haggai":
+		id = "HAG"
+	case "zechariah":
+		id = "ZEC"
+	case "malachi":
+		id = "MAL"
+	case "matthew":
+		id = "MAT"
+	case "mark":
+		id = "MRK"
+	case "luke":
+		id = "LUK"
+	case "john":
+		id = "JHN"
+	case "acts":
+		id = "ACT"
+	case "romans":
+		id = "ROM"
+	case "1 corinthians":
+		id = "1CO"
+	case "2 corinthians":
+		id = "2CO"
+	case "galatians":
+		id = "GAL"
+	case "ephesians":
+		id = "EPH"
+	case "philippians":
+		id = "PHP"
+	case "colossians":
+		id = "COL"
+	case "1 thessalonians":
+		id = "1TH"
+	case "2 thessalonians":
+		id = "2TH"
+	case "1 timothy":
+		id = "1TI"
+	case "2 timothy":
+		id = "2TI"
+	case "titus":
+		id = "TIT"
+	case "philemon":
+		id = "PHM"
+	case "hebrews":
+		id = "HEB"
+	case "james":
+		id = "JAS"
+	case "1 peter":
+		id = "1PE"
+	case "2 peter":
+		id = "2PE"
+	case "1 john":
+		id = "1JN"
+	case "2 john":
+		id = "2JN"
+	case "3 john":
+		id = "3JN"
+	case "jude":
+		id = "JUD"
+	case "revelations":
+		id = "REV"
+	default:
+		err = ErrInvalidPassageSpecified
+	}
+
+	return id, err
+
 }

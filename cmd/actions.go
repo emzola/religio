@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"io"
+	"strconv"
 	"strings"
 )
 
@@ -12,7 +13,7 @@ func printBorder(w io.Writer, passage string) {
 	fmt.Fprintf(w, "+%s+\n", strings.Repeat("-", 100))
 }
 
-func setQuranChapterNumber(chapter string) (int, error) {
+func quranChapterNumber(chapter string) (int, error) {
 	var err error
 	var number int
 
@@ -252,7 +253,7 @@ func setQuranChapterNumber(chapter string) (int, error) {
 	return number, err
 }
 
-func setBibleBookId(book string) (string, error) {
+func bibleBookId(book string) (string, error) {
 	var err error
 	var id string
 
@@ -394,5 +395,34 @@ func setBibleBookId(book string) (string, error) {
 	}
 
 	return id, err
+}
 
+func bibleChapter(passage string, b *bible) []string {
+	if !strings.Contains(passage, ":") {
+		b.chapter = passage
+		return nil
+	}
+	chapter := strings.Split(passage, ":")
+	b.chapter = chapter[0]
+	return chapter
+}
+
+func bibleVerse(passage string, b *bible) error {
+	if !strings.Contains(passage, "-") {
+		number, err := strconv.Atoi(passage)
+		if err != nil {
+			return err
+		}
+		b.verse = append(b.verse, number)
+		return nil
+	}
+	verses := strings.Split(passage, "-")
+	for _, verse := range verses {
+		number, err := strconv.Atoi(verse)
+		if err != nil {
+			return err
+		}
+		b.verse = append(b.verse, number)
+	}
+	return nil
 }

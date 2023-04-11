@@ -13,7 +13,7 @@ func ParseQuran(w io.Writer, args []string) error {
 
 	fs := flag.NewFlagSet("quran", flag.ContinueOnError)
 	fs.SetOutput(w)
-	fs.StringVar(&q.lang, "lang", "en", "Quran language")
+	fs.StringVar(&q.lang, "language", "en", "Quran language (format: en, es)")
 	fs.Usage = func() {
 		var usageMessage = `
 quran: A client for reading The Holy Quran.

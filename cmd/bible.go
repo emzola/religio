@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 )
 
@@ -27,71 +26,44 @@ func (b bible) apiUrl() string {
 	return url
 }
 
-func (b *bible) extractChapterAndVerse(passage string) error {
+func (b *bible) Passage(passage string) error {
 	passage = strings.TrimSpace(passage)
 	parts := strings.Split(passage, " ")
 
+	if strings.Count(passage, " ") < 1 || strings.Count(passage, " ") > 2 {
+		return ErrInvalidPassageSpecified
+	}
+
 	if strings.Count(passage, " ") == 2 {
 		// set book
-		bookId, err := setBibleBookId(fmt.Sprintf("%s %s", parts[0], parts[1]))
+		bookId, err := bibleBookId(fmt.Sprintf("%s %s", parts[0], parts[1]))
 		if err != nil {
 			return err
 		}
 		b.book = bookId
+
 		// set chapter
-		if strings.Contains(parts[2], ":") {
-			chapter := strings.Split(parts[2], ":")
-			b.chapter = chapter[0]
-			// set verse
-			if strings.Contains(chapter[1], "-") {
-				verses := strings.Split(chapter[1], "-")
-				for _, verse := range verses {
-					number, err := strconv.Atoi(verse)
-					if err != nil {
-						return err
-					}
-					b.verse = append(b.verse, number)
-				}
-			} else {
-				number, err := strconv.Atoi(chapter[1])
-				if err != nil {
-					return err
-				}
-				b.verse = append(b.verse, number)
-			}
-		} else {
-			b.chapter = parts[2]
+		chapter := bibleChapter(parts[2], b)
+
+		// set verse
+		err = bibleVerse(chapter[1], b)
+		if err != nil {
+			return err
 		}
-	} else if strings.Count(passage, " ") == 1 {
+	}
+
+	if strings.Count(passage, " ") == 1 {
 		// set book
 		b.book = parts[0]
-		// set chapter
-		if strings.Contains(parts[1], ":") {
-			chapter := strings.Split(parts[1], ":")
-			b.chapter = chapter[0]
 
-			// set verse
-			if strings.Contains(chapter[1], "-") {
-				verses := strings.Split(chapter[1], "-")
-				for _, verse := range verses {
-					number, err := strconv.Atoi(verse)
-					if err != nil {
-						return err
-					}
-					b.verse = append(b.verse, number)
-				}
-			} else {
-				number, err := strconv.Atoi(chapter[1])
-				if err != nil {
-					return err
-				}
-				b.verse = append(b.verse, number)
-			}
-		} else {
-			b.chapter = parts[1]
+		// set chapter
+		chapter := bibleChapter(parts[1], b)
+
+		// set verse
+		err := bibleVerse(chapter[1], b)
+		if err != nil {
+			return err
 		}
-	} else {
-		return ErrInvalidPassageSpecified
 	}
 
 	return nil

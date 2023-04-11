@@ -14,8 +14,8 @@ func ParseBible(w io.Writer, args []string) error {
 
 	fs := flag.NewFlagSet("bible", flag.ContinueOnError)
 	fs.SetOutput(w)
-	fs.StringVar(&b.lang, "lang", "ENG", "Bible language")
-	fs.StringVar(&b.version, "version", "ESV", "Bible version (KJV, ESV, NKJV, etc)")
+	fs.StringVar(&b.lang, "language", "ENG", "Bible language (format: ENG, SPA, DEU)")
+	fs.StringVar(&b.version, "version", "ESV", "Bible version (format: KJV, ESV, NKJV, etc)")
 	fs.Usage = func() {
 		var usageMessage = `
 bible: A client for reading The Holy Bible.
@@ -33,7 +33,7 @@ bible: [options] passage`
 	}
 
 	passage := fs.Arg(0)
-	err := b.extractChapterAndVerse(passage)
+	err := b.Passage(passage)
 	if err != nil {
 		return err
 	}
@@ -53,6 +53,11 @@ bible: [options] passage`
 	printBorder(w, passage)
 
 	bibleData := bible.Data
+
+	if len(bibleData) == 0 {
+		return ErrLangIdNotFound
+	}
+
 	for _, data := range bibleData {
 		fmt.Fprintf(w, "(%d) %s\n", data.VerseStart, data.VerseText)
 	}

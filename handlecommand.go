@@ -11,7 +11,7 @@ import (
 var ErrInvalidSubCommand = errors.New("invalid sub-command specified")
 
 func printUsage(w io.Writer) {
-	fmt.Fprintln(w, "Usage Religio [bible|quran] -h")
+	fmt.Fprintln(w, "Usage [bible|quran] -h")
 	cmd.ParseBible(w, []string{"-h"})
 	cmd.ParseQuran(w, []string{"-h"})
 }
@@ -34,8 +34,12 @@ func handleCommand(w io.Writer, args []string) error {
 	}
 
 	if err != nil {
-		fmt.Fprintln(w, err)
-		printUsage(w)
+		if errors.Is(err, ErrInvalidSubCommand) || errors.Is(err, cmd.ErrInvalidCommand) || errors.Is(err, cmd.ErrInvalidPassageSpecified) || errors.Is(err, cmd.ErrInvalidArgs) {
+			fmt.Println(w, err)
+			printUsage(w)
+		} else {
+			fmt.Fprintln(w, err)
+		}
 	}
 
 	return nil

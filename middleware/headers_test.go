@@ -1,7 +1,6 @@
 package middleware_test
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -14,7 +13,6 @@ func startHTTPServer() *httptest.Server {
 		for k, v := range r.Header {
 			w.Header().Set(k, v[0])
 		}
-		fmt.Fprint(w, "I am the Request Header echoing program")
 	}))
 	return ts
 }

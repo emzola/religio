@@ -1,13 +1,18 @@
-# religio
+# Religio
 
-religio is an command-line client for reading the bible and quran in several languages.
+A command-line client for reading The Holy Bible and Holy Quran in several languages. It has the following features:
+
+- Fetches bible data from Bible Brain (https://www.faithcomesbyhearing.com/audio-bible-resources/bible-brain)
+- Read the bible in different languages and versions
+- Fetches quran data from Al Quran Cloud (https://alquran.cloud/)
+- Read the quran in different languages
 
 ## Usage
 
 ### Read the bible
 
 ```go
-bible -lang es "2 Peter 3:1-5"
+bible -language ENG -version ESV "2 Peter 3:1-3"
 
 // Output:
 // +----------------------------------------------------------------------------------------------------+
@@ -22,7 +27,7 @@ bible -lang es "2 Peter 3:1-5"
 ### Read the quran
 
 ```go
-quran -lang ru Al-Fatihah:1-5
+quran -language ru Al-Fatihah:1-5
 
 // Output:
 // +----------------------------------------------------------------------------------------------------+
